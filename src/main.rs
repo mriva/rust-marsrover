@@ -1,3 +1,4 @@
+#![allow(unused)]
 struct Planet {
     w: u8,
     h: u8
@@ -54,26 +55,25 @@ enum Command {
 }
 
 struct Rover {
-    planet: Planet,
     position: Position,
     direction: Direction
 }
 
-fn execute(rover: Rover, command: Command) -> Rover {
+fn execute(rover: Rover, planet: Planet, command: Command) -> Rover {
     match command {
-        Command::F => forward(rover),
-        Command::B => backward(rover),
+        Command::F => forward(rover, planet),
+        Command::B => backward(rover, planet),
         Command::L => rotate_left(rover),
         Command::R => rotate_right(rover),
     }
 }
 
-fn forward(rover: Rover) -> Rover {
+fn forward(rover: Rover, planet: Planet) -> Rover {
     let new_position = match rover.direction {
-        Direction::N => rover.planet.next_north(rover.position),
-        Direction::E => rover.planet.next_east(rover.position),
-        Direction::S => rover.planet.next_south(rover.position),
-        Direction::W => rover.planet.next_west(rover.position),
+        Direction::N => planet.next_north(rover.position),
+        Direction::E => planet.next_east(rover.position),
+        Direction::S => planet.next_south(rover.position),
+        Direction::W => planet.next_west(rover.position),
     };
 
     Rover {
@@ -82,12 +82,12 @@ fn forward(rover: Rover) -> Rover {
     }
 }
 
-fn backward(rover: Rover) -> Rover {
+fn backward(rover: Rover, planet: Planet) -> Rover {
     let new_position = match rover.direction {
-        Direction::N => rover.planet.next_south(rover.position),
-        Direction::E => rover.planet.next_west(rover.position),
-        Direction::S => rover.planet.next_north(rover.position),
-        Direction::W => rover.planet.next_east(rover.position),
+        Direction::N => planet.next_south(rover.position),
+        Direction::E => planet.next_west(rover.position),
+        Direction::S => planet.next_north(rover.position),
+        Direction::W => planet.next_east(rover.position),
     };
 
     Rover {
@@ -134,7 +134,6 @@ fn create_rover() -> Rover {
     let direction = Direction::N;
 
     let rover = Rover {
-        planet,
         position: starting_position,
         direction,
     };
@@ -162,18 +161,17 @@ mod tests {
            Rover: 0 0 E
            */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 0};
-        let direction = Direction::N;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 0 },
+            direction: Direction::N,
         };
 
-        assert_eq!(0, rover.position.x);
-        assert_eq!(0, rover.position.y);
-        assert!(matches!(execute(rover, Command::R).direction, Direction::E));
+        let new_rover = execute(rover, planet, Command::R);
+        let expected = Rover {
+            position: Position { x: 0, y: 0 },
+            direction: Direction::E,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -186,18 +184,17 @@ mod tests {
             Rover: 0 0 W
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 0};
-        let direction = Direction::N;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 0 },
+            direction: Direction::N,
         };
 
-        assert_eq!(0, rover.position.x);
-        assert_eq!(0, rover.position.y);
-        assert!(matches!(execute(rover, Command::L).direction, Direction::W));
+        let new_rover = execute(rover, planet, Command::L);
+        let expected = Rover {
+            position: Position { x: 0, y: 0 },
+            direction: Direction::W,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -210,19 +207,17 @@ mod tests {
             Rover: 0 2 N
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 1};
-        let direction = Direction::N;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 1 },
+            direction: Direction::N,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(2, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::N));
+        let new_rover = execute(rover, planet, Command::F);
+        let expected = Rover {
+            position: Position { x: 0, y: 2 },
+            direction: Direction::N,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -235,19 +230,17 @@ mod tests {
             Rover: 0 0 S
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 1};
-        let direction = Direction::S;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 1 },
+            direction: Direction::S,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(0, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::S));
+        let new_rover = execute(rover, planet, Command::F);
+        let expected = Rover {
+            position: Position { x: 0, y: 0 },
+            direction: Direction::S,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -260,19 +253,17 @@ mod tests {
             Rover: 0 0 N
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 1};
-        let direction = Direction::N;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 1 },
+            direction: Direction::N,
         };
 
-        let new_rover = execute(rover, Command::B);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(0, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::N));
+        let new_rover = execute(rover, planet, Command::B);
+        let expected = Rover {
+            position: Position { x: 0, y: 0 },
+            direction: Direction::N,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -285,19 +276,17 @@ mod tests {
             Rover: 0 0 N
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 3};
-        let direction = Direction::N;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 3 },
+            direction: Direction::N,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(0, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::N));
+        let new_rover = execute(rover, planet, Command::F);
+        let expected = Rover {
+            position: Position { x: 0, y: 0 },
+            direction: Direction::N,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -310,19 +299,17 @@ mod tests {
             Rover: 0 3 S
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 0};
-        let direction = Direction::S;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 0 },
+            direction: Direction::S,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(3, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::S));
+        let new_rover = execute(rover, planet, Command::L);
+        let expected = Rover {
+            position: Position { x: 0, y: 3 },
+            direction: Direction::S,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -335,19 +322,17 @@ mod tests {
             Rover: 0 1 E
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 4, y: 1};
-        let direction = Direction::E;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 4, y: 1 },
+            direction: Direction::E,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(0, new_rover.position.x);
-        assert_eq!(1, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::E));
+        let new_rover = execute(rover, planet, Command::L);
+        let expected = Rover {
+            position: Position { x: 0, y: 1 },
+            direction: Direction::E,
+        };
+        assert!(matches!(expected, new_rover));
     }
 
     #[test]
@@ -360,18 +345,16 @@ mod tests {
             Rover: 4 1 W
         */
         let planet = Planet { w: 5, h: 4 };
-        let starting_position = Position {x: 0, y: 1};
-        let direction = Direction::W;
-
         let rover = Rover {
-            planet,
-            position: starting_position,
-            direction,
+            position: Position { x: 0, y: 1 },
+            direction: Direction::W,
         };
 
-        let new_rover = execute(rover, Command::F);
-        assert_eq!(4, new_rover.position.x);
-        assert_eq!(1, new_rover.position.y);
-        assert!(matches!(new_rover.direction, Direction::W));
+        let new_rover = execute(rover, planet, Command::L);
+        let expected = Rover {
+            position: Position { x: 4, y: 1 },
+            direction: Direction::W,
+        };
+        assert!(matches!(expected, new_rover));
     }
 }
