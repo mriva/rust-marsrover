@@ -125,31 +125,13 @@ fn rotate_right(rover: Rover) -> Rover {
 }
 
 fn main() {
-    let _rover = create_rover();
-}
-
-fn create_rover() -> Rover {
-    let planet = Planet { w: 5, h: 4 };
-    let starting_position = Position {x: 0, y: 0};
-    let direction = Direction::N;
-
-    let rover = Rover {
-        position: starting_position,
-        direction,
-    };
-
-    rover
+    println!("To boldly go where no man has gone before.");
 }
 
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn can_create_rover() {
-        assert_eq!(0, create_rover().position.x);
-    }
 
     #[test]
     fn rotate_right_command() {
